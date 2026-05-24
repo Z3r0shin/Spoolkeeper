@@ -403,5 +403,4 @@ instead of quitting with Ctrl-C, or a second copy of the service. Kill it first.
 
 ## License
 
-MIT — see [LICENSE](LICENSE). Replace the copyright holder with your name before
-publishing.
+AGPL
