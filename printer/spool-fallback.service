@@ -1,0 +1,16 @@
+# Per-printer fallback service. Install ONE copy on each printer's host.
+# Install: sudo cp printer/spool-fallback.service /etc/systemd/system/
+#          sudo systemctl daemon-reload && sudo systemctl enable --now spool-fallback
+# Edit ExecStart path to match your install.
+[Unit]
+Description=Spoolman per-printer location fallback
+After=network-online.target moonraker.service
+Wants=network-online.target
+
+[Service]
+ExecStart=/usr/bin/python3 /home/pi/spoolman-scanner/printer/printer_fallback.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

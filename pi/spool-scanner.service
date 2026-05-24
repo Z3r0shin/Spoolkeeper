@@ -1,0 +1,19 @@
+# Central Pi scanner service.
+# Install: sudo cp pi/spool-scanner.service /etc/systemd/system/
+#          sudo systemctl daemon-reload && sudo systemctl enable --now spool-scanner
+# Edit ExecStart path / User to match your install.
+[Unit]
+Description=Spoolman barcode scanner (central, authoritative)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+ExecStart=/usr/bin/python3 /home/dietpi/spoolman-scanner/pi/scanner.py
+Restart=always
+RestartSec=5
+# Root guarantees access to the scanner's input device. To run as a normal
+# user instead, add that user to the "input" group and set User= here.
+User=root
+
+[Install]
+WantedBy=multi-user.target
