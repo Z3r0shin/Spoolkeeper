@@ -3,9 +3,11 @@ I vibe-coded this whole thing in a day. The debugging and troubleshooting was al
 done in that day. It can break some stuff on your side even if you follow all the 
 instructions. Please use your brains and, if you're like me, whatever that could 
 help you implement it intelligently.
+
 I may or may not answer messages/issues about this. This is the first time I ever
 post something like this to github. Please be gentle.
 At least I've posted it...
+
 Anyway, here's the robot-generated description/instructions below :
 
 
