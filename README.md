@@ -1,3 +1,14 @@
+# IMPORTANT DISCLAIMER
+I vibe-coded this whole thing in a day. The debugging and troubleshooting was also 
+done in that day. It can break some stuff on your side even if you follow all the 
+instructions. Please use your brains and, if you're like me, whatever that could 
+help you implement it intelligently.
+I may or may not answer messages/issues about this. This is the first time I ever
+post something like this to github. Please be gentle.
+At least I've posted it...
+Anyway, here's the robot-generated description/instructions below :
+
+
 # Spoolman Barcode Scanner for a Klipper Print Farm
 
 Assign [Spoolman](https://github.com/Donkie/Spoolman) spools to multiple
@@ -12,14 +23,17 @@ system self-heals from common failure cases (a printer offline during a move, a
 spool assigned while the controller was down).
 
 > Built and tested with an Eyoyo EY-034 scanner and a Raspberry Pi 3 A+ running
-> DietPi, against Moonraker's `[spoolman]` integration. Any HID barcode scanner
-> and any Debian-based SBC will work.
+> DietPi, against Moonraker's `[spoolman]` integration. It works with any scanner
+> that presents as a **USB/Bluetooth HID keyboard** on any **Linux** SBC — see
+> [Compatibility](#compatibility) for the exact requirements. This is a tool for
+> **Moonraker + Spoolman** specifically, not a generic barcode framework.
 
 ---
 
 ## Contents
 
 - [How it works](#how-it-works)
+- [Compatibility](#compatibility)
 - [What you need](#what-you-need)
 - [Repository layout](#repository-layout)
 - [Prerequisites](#prerequisites)
@@ -40,8 +54,8 @@ spool assigned while the controller was down).
 There are two pieces, and they are belt-and-suspenders: the central Pi is the
 authoritative fast path, and a tiny per-printer script is the fallback.
 
-**Central scanner (`pi/scanner.py`).** A small always-on host (a Pi, an Orange
-Pi Zero, anything that runs Python and takes the scanner) does two things at
+**Central scanner (`pi/scanner.py`).** A small always-on **Linux** host (a Pi, an
+Orange Pi Zero, anything running Python 3 with `evdev`) does two things at
 once. It reads the barcode scanner, and it holds a persistent websocket to every
 printer's Moonraker, listening for `notify_active_spool_set` — the notification
 Moonraker emits whenever *anything* changes a printer's active spool, whether
@@ -74,6 +88,38 @@ follows exactly two rules:
 The fallback never writes another printer's name on top of a contested
 Location; it only claims a blank, or yields. That asymmetry is what keeps two
 printers from fighting over the same field.
+
+---
+
+## Compatibility
+
+This is a Moonraker + Spoolman tool with a specific (if broad) hardware envelope.
+Before assuming it fits your setup, check each of these:
+
+- **Backend:** requires **Moonraker** (with its `[spoolman]` integration) and a
+  **Spoolman** instance. It relies on Moonraker's `notify_active_spool_set`
+  websocket notification, its `POST/GET /server/spoolman/spool_id` endpoint, and
+  Spoolman's `/api/v1/spool` location field. It is *not* a generic
+  barcode-to-anything framework and will not drive non-Klipper systems.
+
+- **Scanner:** must operate as a **USB or Bluetooth HID keyboard** (the default
+  for most scanners). Scanners running in USB-serial/VCP mode, or raw-serial
+  modules wired to GPIO/UART (e.g. a GM65 on an MCU), are *not* read by the
+  central script as written — that's a different input path. The scanner must
+  also read **2D/QR** codes (not 1D-only), be set to a **US/English keyboard
+  layout** (the decoder assumes US), and append an **Enter/CR suffix** to each
+  scan (the script acts only on a terminated read). Both layout and suffix are
+  one-time setup codes in the scanner's manual.
+
+- **Central host (`pi/`):** any **Linux** SBC with Python 3 and `python3-evdev`,
+  because it reads the scanner via Linux `/dev/input/event*` devices. A Raspberry
+  Pi, Orange Pi Zero, etc. all qualify. A bare microcontroller (ESP32, Arduino)
+  does **not** — there's no Linux/evdev there. A free USB port (for a dongle) or
+  working onboard Bluetooth is needed for the scanner.
+
+- **Per-printer fallback (`printer/`):** the portable half — Python 3 standard
+  library only, plain HTTP. It runs on anything that runs Python 3 and can reach
+  Moonraker and Spoolman over the network.
 
 ---
 
@@ -403,4 +449,6 @@ instead of quitting with Ctrl-C, or a second copy of the service. Kill it first.
 
 ## License
 
-AGPL
+GNU Affero General Public License v3.0 — see [LICENSE](LICENSE). Note that the
+AGPL's network-use clause requires anyone who modifies this and offers it to
+others over a network to make their modified source available.
